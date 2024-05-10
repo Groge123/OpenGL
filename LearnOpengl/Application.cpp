@@ -118,8 +118,9 @@ int main()
 		 0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,   // 右下
 		-0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,   // 左下
 		-0.5f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f,   // 左上
-		 0.5f,  0.5f, 0.0f,  0.5f, 0.5f, 0.0f    // 右上
+		 0.5f,  0.5f, 0.0f,  0.5f, 0.0f, 0.5f    // 右上
 	};
+	
 	unsigned int indices[] =
 	{
 		1,0,3,
@@ -155,7 +156,7 @@ int main()
 	{
 		glClearColor(1.0f, 0.5f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
-		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 		static float b = 0.0f;
 		//glUniform4f(location, 0.5f, 0.2f, b, 1.0f);
