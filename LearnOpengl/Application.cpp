@@ -146,8 +146,9 @@ int main()
 	if (location ==-1) std::cout << "SHADER_ERROR" << std::endl;
 	glUniform4f(location, 1.0f, 0.0f, 0.0f, 1.0f);*/
 
-	
-
+	vb.UnBind();
+	ib.UnBind();
+	glBindVertexArray(0);
 
 	float temp = 0.0f;
 	while (!glfwWindowShouldClose(window))
@@ -158,14 +159,16 @@ int main()
 
 		static float b = 0.0f;
 		//glUniform4f(location, 0.5f, 0.2f, b, 1.0f);
-		
-		glBindVertexArray(vao);
 		shader.use();
+		glBindVertexArray(vao);
+		vb.Bind();
+		ib.Bind();
 		
-		shader.setFloat("offsetx", b);
+		
+		/*shader.setFloat("offsetx", b);
 		if (b > 0.5f) temp = -0.01f;
 		else if (b <= 0.0f) temp = 0.01f;
-		b += temp;
+		b += temp;*/
 
 		GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL));
 
