@@ -162,10 +162,10 @@ int main()
 		glBindVertexArray(vao);
 		shader.use();
 		
-		//shader.setFloat("offsetx", b);
-		//if (b > 0.5f) temp = -0.01f;
-		//else if (b <= 0.0f) temp = 0.01f;
-		//b += temp;
+		shader.setFloat("offsetx", b);
+		if (b > 0.5f) temp = -0.01f;
+		else if (b <= 0.0f) temp = 0.01f;
+		b += temp;
 
 		GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL));
 
