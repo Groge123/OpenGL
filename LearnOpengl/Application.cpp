@@ -11,6 +11,8 @@
 #define GLCall(x) {GLClearError();\
     x;\
     ASSERT(GLLogCall(#x,__FILE__,__LINE__))};
+//消息处理函数
+void processInput(GLFWwindow * window);
 //清除之前的错误
 void GLClearError()
 {
@@ -94,6 +96,8 @@ unsigned int CreateShader(const GLuint&vertexShader, const GLuint& fragmentShade
 
 }
 
+float mixValue = 0.2;
+
 int main()
 {
 	GLFWwindow* window;
@@ -117,10 +121,10 @@ int main()
 	//
 	float positions[] = {
 	//     ---- 位置 ----       ---- 颜色 ----     - 纹理坐标 -
-		 0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // 右下
-	 	-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // 左下
-		-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f,   // 左上
-		 0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // 右上
+		 0.5f, -0.5f, 0.0f,   1.0f, 1.0f, 1.0f,   2.0f, 0.0f,   // 右下
+	 	-0.5f, -0.5f, 0.0f,   0.8f, 0.8f, 0.8f,   0.0f, 0.0f,   // 左下
+		-0.5f,  0.5f, 0.0f,   0.8f, 0.8f, 0.8f,   0.0f, 2.0f,   // 左上
+		 0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.8f,   2.0f, 2.0f,   // 右上
 	};
 	
 	
@@ -152,9 +156,9 @@ int main()
 	if (location ==-1) std::cout << "SHADER_ERROR" << std::endl;
 	glUniform4f(location, 1.0f, 0.0f, 0.0f, 1.0f);*/
 
-	unsigned int texture;
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture); // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
+	unsigned int texture1,texture2;
+	glGenTextures(1, &texture1);
+	glBindTexture(GL_TEXTURE_2D, texture1); // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
 	// set the texture wrapping parameters
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// set texture wrapping to GL_REPEAT (default wrapping method)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -162,6 +166,7 @@ int main()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	// load image, create texture and generate mipmaps
+	stbi_set_flip_vertically_on_load(true);
 	int width, height, nrChannels;
 	// The FileSystem::getPath(...) is part of the GitHub repository so we can find files on any IDE/platform; replace it with your own image path.
 	unsigned char* data = stbi_load("container.jpg", &width, &height, &nrChannels, 0);
@@ -174,36 +179,92 @@ int main()
 	{
 		std::cout << "Failed to load texture" << std::endl;
 	}
+	stbi_image_free(data);
+	
+	glGenTextures(1, &texture2);
+	glBindTexture(GL_TEXTURE_2D, texture2);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	
+
+	data = stbi_load("awesomeface.png", &width, &height, &nrChannels, 0);
+	if (data)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		std::cout << "Failed to load texture" << std::endl;
+	}
+	
 	
 	stbi_image_free(data);
+
+	// tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
+	// -------------------------------------------------------------------------------------------
+	shader.use(); // don't forget to activate/use the shader before setting uniforms!
+	// either set it manually like so:
+	glUniform1i(glGetUniformLocation(shader.ID, "texture1"), 0);
+	// or set it via the texture class
+	shader.setInt("texture2", 1);
+
 	vb.UnBind();
 	ib.UnBind();
 	glBindVertexArray(0);
 
-	float temp = 0.0f;
+	float temp = 0.004f;
 	while (!glfwWindowShouldClose(window))
 	{
+		processInput(window);
 		glClearColor(1.0f, 0.5f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		glBindTexture(GL_TEXTURE_2D, texture);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture1);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, texture2);
 		static float b = 0.0f;
-		//glUniform4f(location, 0.5f, 0.2f, b, 1.0f);
+		
 		shader.use();
 		glBindVertexArray(vao);
 		vb.Bind();
 		ib.Bind();
 		
 		
-		/*shader.setFloat("offsetx", b);
-		if (b > 0.5f) temp = -0.01f;
-		else if (b <= 0.0f) temp = 0.01f;
-		b += temp;*/
+		shader.setFloat("offsetx", b);
+		shader.setFloat("mixValue", mixValue);
+		if (b > 0.5f) temp = -0.004f;
+		else if (b < -0.5f) temp = 0.004f; 
+		b += temp;
 
 		GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL));
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
+	//销毁窗口
+	glfwTerminate();
+}
+//消息处理
+void processInput(GLFWwindow* window)
+{
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, true);
 
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+	{
+		mixValue += 0.001f; // change this value accordingly (might be too slow or too fast based on system hardware)
+		if (mixValue >= 1.0f)
+			mixValue = 1.0f;
+	}
+	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+	{
+		mixValue -= 0.001f; // change this value accordingly (might be too slow or too fast based on system hardware)
+		if (mixValue <= 0.0f)
+			mixValue = 0.0f;
+	}
 }
