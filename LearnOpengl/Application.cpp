@@ -6,6 +6,7 @@
 #include <sstream>
 #include "Shader.h"
 #include "stb_image.h"
+#include "Texture.h"
 
 #define ASSERT(x) if (!(x)) __debugbreak();
 #define GLCall(x) {GLClearError();\
@@ -83,18 +84,7 @@ public:
 };
 
 
-//创建着色器program
-unsigned int CreateShader(const GLuint&vertexShader, const GLuint& fragmentShader)
-{
-	unsigned int shaderprogram;
-	shaderprogram = glCreateProgram();
-	GLCall(glAttachShader(shaderprogram, vertexShader));
-	GLCall(glAttachShader(shaderprogram, fragmentShader));
-	GLCall(glLinkProgram(shaderprogram));
 
-	return shaderprogram;
-
-}
 
 float mixValue = 0.2;
 
@@ -150,59 +140,12 @@ int main()
 	glEnableVertexAttribArray(2);
 	
 	IndicesBuffer ib(indices, 6);
-	//统一变量color
-	/*unsigned int location;
-	location = glGetUniformLocation(shaderprogram, "u_Color"); 
-	if (location ==-1) std::cout << "SHADER_ERROR" << std::endl;
-	glUniform4f(location, 1.0f, 0.0f, 0.0f, 1.0f);*/
 
-	unsigned int texture1,texture2;
-	glGenTextures(1, &texture1);
-	glBindTexture(GL_TEXTURE_2D, texture1); // all upcoming GL_TEXTURE_2D operations now have effect on this texture object
-	// set the texture wrapping parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// set texture wrapping to GL_REPEAT (default wrapping method)
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	// set texture filtering parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	// load image, create texture and generate mipmaps
-	stbi_set_flip_vertically_on_load(true);
-	int width, height, nrChannels;
-	// The FileSystem::getPath(...) is part of the GitHub repository so we can find files on any IDE/platform; replace it with your own image path.
-	unsigned char* data = stbi_load("container.jpg", &width, &height, &nrChannels, 0);
-	if (data)
-	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else
-	{
-		std::cout << "Failed to load texture" << std::endl;
-	}
-	stbi_image_free(data);
-	
-	glGenTextures(1, &texture2);
-	glBindTexture(GL_TEXTURE_2D, texture2);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	//纹理配置
+	Texture texture1("container.jpg");
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	
+	Texture texture2("awesomeface.png",GL_RGBA);
 
-	data = stbi_load("awesomeface.png", &width, &height, &nrChannels, 0);
-	if (data)
-	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else
-	{
-		std::cout << "Failed to load texture" << std::endl;
-	}
-	
-	
-	stbi_image_free(data);
 
 	// tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
 	// -------------------------------------------------------------------------------------------
@@ -224,9 +167,9 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture1);
+		texture1.Bind();
 		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, texture2);
+		texture2.Bind();
 		static float b = 0.0f;
 		
 		shader.use();

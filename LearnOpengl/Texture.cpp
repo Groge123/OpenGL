@@ -1,7 +1,7 @@
 #include "Texture.h"
 #include "stb_image.h"
 
-Texture::Texture(const char* filepath)
+Texture::Texture(const char* filepath, unsigned int RGB)
 {
 	glGenTextures(1, &ID);
 	glBindTexture(GL_TEXTURE_2D, ID);
@@ -16,10 +16,10 @@ Texture::Texture(const char* filepath)
 	stbi_set_flip_vertically_on_load(true);
 	int width, height, nrChannels;
 	// The FileSystem::getPath(...) is part of the GitHub repository so we can find files on any IDE/platform; replace it with your own image path.
-	unsigned char* data = stbi_load("container.jpg", &width, &height, &nrChannels, 0);
+	unsigned char* data = stbi_load(filepath, &width, &height, &nrChannels, 0);
 	if (data)
 	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glTexImage2D(GL_TEXTURE_2D, 0, RGB, width, height, 0, RGB, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
 	else
@@ -27,4 +27,19 @@ Texture::Texture(const char* filepath)
 		std::cout << "Failed to load texture" << std::endl;
 	}
 	stbi_image_free(data);
+}
+
+Texture::~Texture()
+{
+	glDeleteTextures(1, &ID);
+}
+
+void Texture::Bind()
+{
+	glBindTexture(GL_TEXTURE_2D,ID);
+}
+
+void Texture::UnBind()
+{
+	glBindTexture(GL_TEXTURE_2D, ID);
 }

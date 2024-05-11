@@ -8,6 +8,8 @@ private:
 	unsigned int ID;
 
 public:
-	Texture(const char* filepath);
+	Texture(const char* filepath,unsigned int RGB=GL_RGB);
 	~Texture();
+	void Bind();
+	void UnBind();
 };

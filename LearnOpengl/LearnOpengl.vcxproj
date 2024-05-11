@@ -134,16 +134,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
-    <ClCompile Include="res\Shaders\Texture.cpp" />
     <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Basic.shader" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="res\Shaders\Texture.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="stb_image.h" />
+    <ClInclude Include="Texture.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -21,7 +21,7 @@
     <ClCompile Include="Shader.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="res\Shaders\Texture.cpp">
+    <ClCompile Include="Texture.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -37,7 +37,7 @@
     <ClInclude Include="stb_image.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="res\Shaders\Texture.h">
+    <ClInclude Include="Texture.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
