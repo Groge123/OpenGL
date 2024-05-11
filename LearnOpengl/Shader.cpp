@@ -1,6 +1,5 @@
 #include "Shader.h"
 
-
 //获取着色器文件
 ShaderSource GetShaderSource(const std::string& filepath)
 {
