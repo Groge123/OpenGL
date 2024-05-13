@@ -8,6 +8,11 @@
 #include "stb_image.h"
 #include "Texture.h"
 
+// settings
+const unsigned int SCR_WIDTH = 800;
+const unsigned int SCR_HEIGHT = 600;
+float angle = 45.0f;
+
 #define ASSERT(x) if (!(x)) __debugbreak();
 #define GLCall(x) {GLClearError();\
     x;\
@@ -30,6 +35,7 @@ bool GLLogCall(const char*function,const char*file,const GLuint line)
 	}
 	return true;
 }
+
 
 //顶点缓冲区对象
 class VertexBuffer
@@ -108,44 +114,91 @@ int main()
 	if (glewInit() != GLEW_OK) std::cout << "GLEW_ERROR" << std::endl;
 	//配置着色器
 	Shader shader("Basic.Shader");
-	//
+	//顶点数组
 	float positions[] = {
-	//     ---- 位置 ----       ---- 颜色 ----     - 纹理坐标 -
-		 0.5f, -0.5f, 0.0f,   1.0f, 1.0f, 1.0f,   2.0f, 0.0f,   // 右下
-	 	-0.5f, -0.5f, 0.0f,   0.8f, 0.8f, 0.8f,   0.0f, 0.0f,   // 左下
-		-0.5f,  0.5f, 0.0f,   0.8f, 0.8f, 0.8f,   0.0f, 2.0f,   // 左上
-		 0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.8f,   2.0f, 2.0f,   // 右上
+		//     ---- 位置 ----    - 纹理坐标 -
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+
+		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
 	};
-	
-	
+	//索引数组261 156
 	unsigned int indices[] =
 	{
-		1,0,3,
-		3,2,1
+				// 前面
+		  0, 1, 2, // 右下角到左下角到左上角
+		  2, 3, 0, // 左上角到右上角到右下角
+
+		  // 后面
+		  4, 5, 6, // 右下角到左下角到左上角
+		  6, 7, 4, // 左上角到右上角到右下角
+
+		  // 左侧面
+		  8, 9, 10, // 右下角到左下角到左上角
+		  10,11, 8, // 左上角到右上角到右下角
+
+		  // 右侧面
+		  12, 13, 14, // 右下角到左下角到左上角
+		  14, 15, 12, // 左上角到右上角到右下角
+
+		  // 顶面
+		  16, 17, 18, // 右下角到左下角到左上角
+		  18, 19, 16, // 左上角到右上角到右下角
+
+		  // 底面
+		  20, 21, 22, // 右下角到左下角到左上角
+		  22, 23, 20, // 左上角到右上角到右下角
 	};
 	unsigned int vao;
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 	
 	VertexBuffer vb(positions, sizeof(positions));
-	
-
 	// 位置属性
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 	// 颜色属性
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+	//glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-	glEnableVertexAttribArray(2);
 	
-	IndicesBuffer ib(indices, 6);
+	IndicesBuffer ib(indices, sizeof(indices)/sizeof(indices[0]));
+	std::cout << sizeof(indices) / sizeof(indices[0]) << std::endl;
 
 	//纹理配置
 	Texture texture1("container.jpg");
 
 	Texture texture2("awesomeface.png",GL_RGBA);
 
+	
+	//trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5));
+	
 
 	// tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
 	// -------------------------------------------------------------------------------------------
@@ -159,33 +212,62 @@ int main()
 	ib.UnBind();
 	glBindVertexArray(0);
 
-	float temp = 0.004f;
+	glEnable(GL_DEPTH_TEST);
+
+	glm::vec3 translate[] = {
+		  glm::vec3(0.0f,  0.0f,  0.0f),
+		  glm::vec3(2.0f,  5.0f, -15.0f),
+		  glm::vec3(-1.5f, -2.2f, -2.5f),
+		  glm::vec3(-3.8f, -2.0f, -12.3f),
+		  glm::vec3(2.4f, -0.4f, -3.5f),
+		  glm::vec3(-1.7f,  3.0f, -7.5f),
+		  glm::vec3(1.3f, -2.0f, -2.5f),
+		  glm::vec3(1.5f,  2.0f, -2.5f),
+		  glm::vec3(1.5f,  0.2f, -1.5f),
+		  glm::vec3(-1.3f,  1.0f, -1.5f)
+	};
+
 	while (!glfwWindowShouldClose(window))
 	{
 		processInput(window);
-		glClearColor(1.0f, 0.5f, 0.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClearColor(0.4f, 0.3f, 0.4f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		glActiveTexture(GL_TEXTURE0);
 		texture1.Bind();
 		glActiveTexture(GL_TEXTURE1);
 		texture2.Bind();
+
 		static float b = 0.0f;
-		
+		shader.setFloat("mixValue", mixValue);
 		shader.use();
 		glBindVertexArray(vao);
 		vb.Bind();
 		ib.Bind();
-		
-		
-		shader.setFloat("offsetx", b);
-		shader.setFloat("mixValue", mixValue);
-		if (b > 0.5f) temp = -0.004f;
-		else if (b < -0.5f) temp = 0.004f; 
-		b += temp;
 
-		GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL));
+		glm::mat4 view = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
+		glm::mat4 projection = glm::mat4(1.0f);
+		projection = glm::perspective(glm::radians(angle), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+		// pass transformation matrices to the shader
+		shader.setMat4("view", view);
+		shader.setMat4("projection",projection);
+		//乘法相反的顺序
+		//trans = glm::translate(trans, glm::vec3(-0.5, 0.0, 0.0));
+		for (int i = 0; i < 10; i++)
+		{
+			// calculate the model matrix for each object and pass it to shader before drawing
+			glm::mat4 model = glm::mat4(1.0f);
+			model = glm::translate(model, translate[i]);
+			float angle = 20.0f * i;
+			if(i==1||i%3==0)
+			model = glm::rotate(model, glm::radians(angle)+(float)glfwGetTime(), glm::vec3(1.0f, 0.3f, 0.5f));
+			
+			model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+			shader.setMat4("model", model);
 
+			GLCall(glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(indices[0]), GL_UNSIGNED_INT, NULL));
+		}
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
@@ -200,13 +282,15 @@ void processInput(GLFWwindow* window)
 
 	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
 	{
-		mixValue += 0.001f; // change this value accordingly (might be too slow or too fast based on system hardware)
+		angle += 1;
+		mixValue += 0.01f; // change this value accordingly (might be too slow or too fast based on system hardware)
 		if (mixValue >= 1.0f)
 			mixValue = 1.0f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
 	{
-		mixValue -= 0.001f; // change this value accordingly (might be too slow or too fast based on system hardware)
+		angle -= 1;
+		mixValue -= 0.01f; // change this value accordingly (might be too slow or too fast based on system hardware)
 		if (mixValue <= 0.0f)
 			mixValue = 0.0f;
 	}

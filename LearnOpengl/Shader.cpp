@@ -23,8 +23,9 @@ ShaderSource GetShaderSource(const std::string& filepath)
 		}
 		else str[(int)type] << line << '\n';
 
-	}std::cout << str[0].str() << std::endl;
-	std::cout << str[1].str() << std::endl;
+	}
+	//std::cout << str[0].str() << std::endl;
+	//std::cout << str[1].str() << std::endl;
 	return { str[0].str(),str[1].str() };
 }
 
@@ -70,6 +71,11 @@ void Shader::setBool(const std::string& name, bool value) const
 void Shader::setInt(const std::string& name, int value) const
 {
 	glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
+}
+
+void Shader::setMat4(const std::string& name, glm::mat4 mat4) const
+{
+	glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &mat4[0][0]);
 }
 
 void Shader::setFloat(const std::string& name, float value) const
