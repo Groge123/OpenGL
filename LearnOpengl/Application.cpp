@@ -7,18 +7,36 @@
 #include "Shader.h"
 #include "stb_image.h"
 #include "Texture.h"
-
+#include "Camera.h"
 // settings
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+const unsigned int SCR_WIDTH = 1080;
+const unsigned int SCR_HEIGHT = 720;
 float angle = 45.0f;
+// camera
+Camera view(glm::vec3(0.0f,0.0f,3.0f));
+
+bool firstMouse = true;
+float yaw = -90.0f;	// yaw is initialized to -90.0 degrees since a yaw of 0.0 results in a direction vector pointing to the right so we initially rotate a bit to the left.
+float pitch = 0.0f;
+float lastX = 1080.0f / 2.0;
+float lastY = 720.0f / 2.0;
+float fov = 45.0f;
+// timing
+float deltaTime = 0.0f;	// time between current frame and last frame
+float lastFrame = 0.0f;
 
 #define ASSERT(x) if (!(x)) __debugbreak();
 #define GLCall(x) {GLClearError();\
     x;\
     ASSERT(GLLogCall(#x,__FILE__,__LINE__))};
 //消息处理函数
-void processInput(GLFWwindow * window);
+//键盘
+void KeyInput(GLFWwindow * window);
+//鼠标
+void mouse_callback(GLFWwindow * window, double xpos, double ypos);
+void scroll_callback(GLFWwindow * window, double xoffset, double yoffset);
+//窗口大小回调函数
+void framebuffer_size_callback(GLFWwindow * window, int width, int height);
 //清除之前的错误
 void GLClearError()
 {
@@ -110,7 +128,15 @@ int main()
 	}
 
 	glfwMakeContextCurrent(window);
+	//帧率显示
 	glfwSwapInterval(1);
+	//隐藏鼠标
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	//回调函数
+	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+	glfwSetCursorPosCallback(window, mouse_callback);
+	glfwSetScrollCallback(window, scroll_callback);
+
 	if (glewInit() != GLEW_OK) std::cout << "GLEW_ERROR" << std::endl;
 	//配置着色器
 	Shader shader("Basic.Shader");
@@ -174,6 +200,7 @@ int main()
 		  20, 21, 22, // 右下角到左下角到左上角
 		  22, 23, 20, // 左上角到右上角到右下角
 	};
+
 	unsigned int vao;
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
@@ -192,7 +219,7 @@ int main()
 	std::cout << sizeof(indices) / sizeof(indices[0]) << std::endl;
 
 	//纹理配置
-	Texture texture1("container.jpg");
+	Texture texture1("wall.jpg");
 
 	Texture texture2("awesomeface.png",GL_RGBA);
 
@@ -229,7 +256,10 @@ int main()
 
 	while (!glfwWindowShouldClose(window))
 	{
-		processInput(window);
+		KeyInput(window);
+		float currentFrame = static_cast<float>(glfwGetTime());
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
 		glClearColor(0.4f, 0.3f, 0.4f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -245,12 +275,10 @@ int main()
 		vb.Bind();
 		ib.Bind();
 
-		glm::mat4 view = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
 		glm::mat4 projection = glm::mat4(1.0f);
-		projection = glm::perspective(glm::radians(angle), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+		projection = glm::perspective(glm::radians(view.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 		// pass transformation matrices to the shader
-		shader.setMat4("view", view);
+		shader.setMat4("view",view.GetViewMatrix() );
 		shader.setMat4("projection",projection);
 		//乘法相反的顺序
 		//trans = glm::translate(trans, glm::vec3(-0.5, 0.0, 0.0));
@@ -261,11 +289,11 @@ int main()
 			model = glm::translate(model, translate[i]);
 			float angle = 20.0f * i;
 			if(i==1||i%3==0)
-			model = glm::rotate(model, glm::radians(angle)+(float)glfwGetTime(), glm::vec3(1.0f, 0.3f, 0.5f));
-			
+			model = glm::rotate(model, glm::radians((float)glfwGetTime()), glm::vec3(1.0f, 0.3f, 0.5f));
+			else
 			model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
 			shader.setMat4("model", model);
-
+			
 			GLCall(glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(indices[0]), GL_UNSIGNED_INT, NULL));
 		}
 		glfwSwapBuffers(window);
@@ -275,23 +303,65 @@ int main()
 	glfwTerminate();
 }
 //消息处理
-void processInput(GLFWwindow* window)
+void KeyInput(GLFWwindow* window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 
 	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
 	{
-		angle += 1;
 		mixValue += 0.01f; // change this value accordingly (might be too slow or too fast based on system hardware)
 		if (mixValue >= 1.0f)
 			mixValue = 1.0f;
 	}
 	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
 	{
-		angle -= 1;
 		mixValue -= 0.01f; // change this value accordingly (might be too slow or too fast based on system hardware)
 		if (mixValue <= 0.0f)
 			mixValue = 0.0f;
 	}
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+		view.ProcessKeyboard(FORWARD, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		view.ProcessKeyboard(BACKWARD, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		view.ProcessKeyboard(LEFT, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		view.ProcessKeyboard(RIGHT, deltaTime);
+}
+
+// glfw: whenever the mouse moves, this callback is called
+void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
+{
+	float xpos = static_cast<float>(xposIn);
+	float ypos = static_cast<float>(yposIn);
+
+	if (firstMouse)
+	{
+		lastX = xpos;
+		lastY = ypos;
+		firstMouse = false;
+	}
+
+	float xoffset = xpos - lastX;
+	float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+	lastX = xpos;
+	lastY = ypos;
+
+	view.ProcessMouseMovement(xoffset, yoffset);
+	
+}
+
+// glfw: whenever the mouse scroll wheel scrolls, this callback is called
+// ----------------------------------------------------------------------
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	view.ProcessMouseScroll(static_cast<float>(yoffset));
+	std::cout << yoffset << std::endl;
+}
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+	// make sure the viewport matches the new window dimensions; note that width and 
+	// height will be significantly larger than specified on retina displays.
+	glViewport(0, 0, width, height);
 }
