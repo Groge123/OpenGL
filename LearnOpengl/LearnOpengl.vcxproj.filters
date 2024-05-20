@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Application.cpp">
+    <ClCompile Include="1.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Shader.cpp">
@@ -27,9 +27,18 @@
     <ClCompile Include="Camera.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="2.light.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Basic.shader">
+    <None Include="Basic.glsl">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="light.glsl">
+      <Filter>资源文件</Filter>
+    </None>
+    <None Include="lightCube.glsl">
       <Filter>资源文件</Filter>
     </None>
   </ItemGroup>
