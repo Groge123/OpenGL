@@ -273,7 +273,13 @@ int main()
 		light.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
 		light.setVec3("light.diffuse", 0.5f, 0.5f, 0.5f);
 		light.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+		//点光源
 		light.setVec3("light.position", lightPos);
+		light.setFloat("light.constant", 1.0f);
+		light.setFloat("light.linear", 0.09f);
+		light.setFloat("light.quadratic", 0.032f);
+		//平行光
+		//light.setVec3("light.direction", -0.2f, -1.0f, -0.3f);
 		light.setVec3("viewPos",camera.Position);
 		//light.setVec3("lightColor",lightColor);
 		
@@ -311,7 +317,7 @@ int main()
 		lightCube.setMat4("view", view);
 		model = glm::mat4(1.0f);
 		lightPos = glm::vec3(sin(glfwGetTime()*0.5), sin(glfwGetTime() * 0.5),cos(glfwGetTime()*0.5));
-		//lightPos = glm::vec3(0.0f, 0.0f, 2.0f);
+		//lightPos = glm::vec3(-0.2f, -1.0f, -0.3f);
 		model = glm::translate(model, lightPos);
 		model = glm::scale(model, glm::vec3(0.2f)); // a smaller cube
 		lightCube.setMat4("model", model);
@@ -328,8 +334,26 @@ int main()
 //消息处理
 void KeyInput(GLFWwindow* window)
 {
-	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_Q )== GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
+	static bool isEscapeKeyPressed = false; // 用于跟踪'Escape'键的状态
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+		if (!isEscapeKeyPressed) { // 只有在'Escape'键没有被按下时才执行
+			bool isMaximized = glfwGetWindowAttrib(window, GLFW_MAXIMIZED);
+			if (isMaximized) {
+				glfwRestoreWindow(window);
+			}
+			else {
+				glfwMaximizeWindow(window);
+			}
+			isEscapeKeyPressed = true; // 更新'Escape'键的状态
+		}
+	}
+	else {
+		isEscapeKeyPressed = false; // 如果'Escape'键没有被按下，更新状态
+	}
+		
+	
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 		camera.ProcessKeyboard(FORWARD, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
