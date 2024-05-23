@@ -264,9 +264,9 @@ int main()
 		light.use();
 		// material properties
 		
-		light.setFloat("material.shininess", 64.0f);
+		light.setFloat("material.shininess", 32.0f);
 
-		light.setVec3("light.position", lightPos);
+		//light.setVec3("light.position", lightPos);
 		light.setVec3("viewPos", camera.Position);
 
 		// light properties
@@ -278,8 +278,14 @@ int main()
 		light.setFloat("light.constant", 1.0f);
 		light.setFloat("light.linear", 0.09f);
 		light.setFloat("light.quadratic", 0.032f);
+		//手电筒
+		light.setVec3("light.position", camera.Position);
+		light.setVec3("light.direction", camera.Front);
+		light.setFloat("light.cutOff", glm::cos(glm::radians(12.5f)));
+		light.setFloat("light.outerCutOff", glm::cos(glm::radians(17.5f)));
 		//平行光
 		//light.setVec3("light.direction", -0.2f, -1.0f, -0.3f);
+
 		light.setVec3("viewPos",camera.Position);
 		//light.setVec3("lightColor",lightColor);
 		
@@ -316,7 +322,7 @@ int main()
 		lightCube.setMat4("projection", projection);
 		lightCube.setMat4("view", view);
 		model = glm::mat4(1.0f);
-		lightPos = glm::vec3(sin(glfwGetTime()*0.5), sin(glfwGetTime() * 0.5),cos(glfwGetTime()*0.5));
+		//lightPos = glm::vec3(sin(glfwGetTime()*0.5), sin(glfwGetTime() * 0.5),cos(glfwGetTime()*0.5));
 		//lightPos = glm::vec3(-0.2f, -1.0f, -0.3f);
 		model = glm::translate(model, lightPos);
 		model = glm::scale(model, glm::vec3(0.2f)); // a smaller cube
